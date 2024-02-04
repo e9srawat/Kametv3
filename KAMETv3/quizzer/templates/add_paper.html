@@ -1,0 +1,41 @@
+{% extends 'adminpanel.html' %}
+{% block content %}
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
+  <br />
+  <form method="post" action="{% url 'add_paper' %}">
+    {% csrf_token %}
+    <div class="card" style="padding: 20px; margin-bottom: 20px; background-color: #ededed;">
+      <div class="d-flex justify-content-center align-items-center">
+        <h2>Create Paper</h2>
+      </div>
+      <div class="row row-cols-1 g-2" style="margin-top: 10px;">
+        <div class="col">
+          <input type="text" class="form-control" name="Subject" placeholder="Subject" style="max-width: 600px;" required /><br />
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center align-items-center">
+        <h4>Settings</h4>
+      </div>
+      <div class="d-flex text-center justify-content-center align-items-center" style="margin-top: 10px;">
+        <div class="row row-cols-2 g-2">
+          <div class="col" style="width: 200px;">
+            <label for="time_allotted">Minutes Allocated</label>
+            <input type="number" class="form-control mx-auto" style="max-width: 100px;" name="time_allotted" min="0" />
+          </div>
+          <div class="col" style="width: 200px;">
+            <label for="number_questions">Number of Questions</label>
+            <input type="number" class="form-control mx-auto" style="max-width: 100px;" name="number_questions" min="0" />
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    <div class="d-flex text-center justify-content-center align-items-center" style="margin-top: 10px;">
+      <a class="btn btn-secondary" href="{% url 'all_papers' %}" style="width: 200px;">Cancel</a> &nbsp;&nbsp;&nbsp;
+      <button type="submit" class="btn btn-success" style="width: 200px;">Create Paper</button>
+    </div>
+  </form>
+{% endblock %}

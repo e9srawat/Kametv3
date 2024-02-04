@@ -8,10 +8,35 @@
       {% for paper in all_papers %}
         <li style="margin-top:20px;">
           <a href="{% url 'questions' paper_id=paper.id %}">{{ paper.subject }}</a>
+          <div style="margin-top: 10px;">
+            <a class="btn btn-primary" href="{% url 'edit_paper' paper_id=paper.id %}">Settings</a>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal{{ paper.id }}">Delete</button>
+            <form method="post" action="{% url 'delete_paper' pk=paper.id %}">
+              {% csrf_token %}
+              <div class="modal fade" id="exampleModal{{ paper.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">Warning</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">Are you sure you want to delete the paper "{{ paper.subject }}"? This will delete all Questions in the paper too</div>
+                    <div class="modal-footer">
+                      <button type="button" style="width: 48%;" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-danger" style="width: 48%;">Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
         </li>
       {% endfor %}
     </ul>
   </div>
   <div class="d-flex justify-content-center align-items-center">
+  </div>
+  <div class="d-flex justify-content-center align-items-center">
+    <a href="{% url 'add_paper' %}" class="btn btn-success" style="width: 200px; margin:10px ;">Add Paper</a> &nbsp; &nbsp;
   </div>
 {% endblock %}

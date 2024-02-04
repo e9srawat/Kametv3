@@ -1,0 +1,28 @@
+{% extends 'adminpanel.html' %}
+
+{% block content %}
+
+  <body>
+    <div class="card" style="padding: 20px; margin-bottom: 20px; background-color: #ededed;">
+    <h1>Change Settings</h1>
+    <br />
+
+    <form method="post">
+      {% csrf_token %}
+      <div style="flex">
+        <h6>Subject:</h6>
+        <input type="text" class="form-control" style="max-width: 100px;" name="subject" value="{{ paper.subject }}" min="1" required />
+        <h6>Time Allotted in minutes:</h6>
+        <input type="number" class="form-control" style="max-width: 100px;" name="time_allotted" value="{{ paper.time_allotted }}" min="0" required />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <h6>Number of Questions:</h6>
+        <input type="number" class="form-control" style="max-width: 100px;" name="number_questions" value="{{ paper.number_questions }}" min="5" required />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+
+      <br />
+      <a class="btn btn-secondary" href="{% url 'all_usernames' %}">Cancel</a>
+      <button type="button submit" class="btn btn-success">Update</button>
+
+    </form>
+    </div>
+  </body>
+{% endblock %}

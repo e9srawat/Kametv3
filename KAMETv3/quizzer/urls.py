@@ -8,6 +8,11 @@ urlpatterns = [
     path("control/", views.AdminPanel.as_view(), name="control"),
     
     path('all_papers/', views.AllPapers.as_view(), name='all_papers'),
+    path('add_paper/', views.AddPaper.as_view(), name='add_paper'),
+    path('edit_paper/<int:paper_id>', views.EditPaper.as_view(), name='edit_paper'),
+    path('delete_paper/<int:pk>/', views.DeletePaper.as_view(), name='delete_paper'),
+
+
     path('questions/<int:paper_id>', views.PaperQuestions.as_view(), name='questions'),    
     path('edit_question/<int:question_id>/', views.EditQuestion.as_view(), name='edit_question'),
     path('delete_question/<int:pk>/', views.DeleteQuestion.as_view(), name='delete_question'),

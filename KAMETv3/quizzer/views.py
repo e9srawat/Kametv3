@@ -1,5 +1,6 @@
 import random
 from typing import Any
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from .models import *
@@ -64,7 +65,46 @@ class AllPapers(AdminRequiredDispatchMixin,ListView):
     template_name = 'all_papers.html'
     context_object_name = 'all_papers'
     
-class PaperQuestions(ListView):
+class AddPaper(AdminRequiredDispatchMixin,CreateView):
+    model = Paper
+    template_name = 'add_paper.html'
+    fields = ['subject', 'time_allotted', 'number_questions']
+    success_url = reverse_lazy('all_papers')  
+
+    def post(self, request, *args, **kwargs):
+        subject = request.POST.get('Subject')
+        time_allotted = request.POST.get('time_allotted')
+        number_questions = request.POST.get('number_questions')
+        Paper.objects.create(subject=subject, time_allotted=time_allotted, number_questions=number_questions)
+
+        return HttpResponseRedirect(self.success_url)
+
+class EditPaper(AdminRequiredDispatchMixin,UpdateView):
+    model = Paper
+    template_name = 'edit_paper.html'
+    fields = ['subject', 'time_allotted', 'number_questions']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        paper = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
+        context['paper'] = paper
+        
+        return context
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Paper, pk=self.kwargs['paper_id'])
+
+    def get_success_url(self):
+        return reverse_lazy('all_papers')
+    
+class DeletePaper(AdminRequiredDispatchMixin,DeleteView):
+    model = Paper
+    template_name = None
+    
+    def get_success_url(self):
+        return reverse_lazy('all_papers')
+    
+class PaperQuestions(AdminRequiredDispatchMixin, ListView):
     model = Question
     template_name = 'paper_questions.html'
     context_object_name = 'questions'
@@ -78,7 +118,7 @@ class PaperQuestions(ListView):
         context['paper'] = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
         return context
     
-class EditQuestion(UpdateView):
+class EditQuestion(AdminRequiredDispatchMixin,UpdateView):
     model = Question
     template_name = 'edit_question.html'
     fields = ['question_text']
@@ -221,19 +261,6 @@ class Base(UserRequiredDispatchMixin,TemplateView):
         context = {'paper':paper, 'tuser':testuser }
         return context
 
-# class PaperQuestionsView(UserRequiredDispatchMixin,View):
-#     template_name = 'questions_list.html'
-
-#     def get(self, request, paper_id):
-#         paper = get_object_or_404(Paper, id=paper_id)
-#         questions = Question.objects.filter(paper=paper)
-#         context = {
-#             'paper': paper,
-#             'questions': questions,
-#         }
-
-#         return render(request, self.template_name, context)
-    
     
 class RandomQuestionsView(UserRequiredDispatchMixin,ListView):
     template_name = "question_list.html"
