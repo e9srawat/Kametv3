@@ -1,176 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" /> <!-- Custom styles -->
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+{% extends 'base.html' %}
 
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-top: 50px;
-        }
+<title>
+  {% block title %}
+    Test
+  {% endblock %}
+</title>
 
-        .list-group-item {
-            border: none;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .btn-primary,
-        .btn-danger,
-        .btn-warning {
-            transition: all 0.3s;
-            margin-right: 10px;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-
-        .btn-danger:hover {
-            background-color: #bd2130;
-            border-color: #bd2130;
-        }
-
-        .btn-warning {
-            background-color: #ffc107;
-            border-color: #ffc107;
-        }
-
-        .btn-warning:hover {
-            background-color: #e0a800;
-            border-color: #e0a800;
-        }
-
-        h2 {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-      }
-
-      #countdown {
-          margin-left: auto;
-      }
-    </style>
-    <title>
-      {% block title %}
-        Test
-      {% endblock %}
-    </title>
-  </head>
+{% block content %}
   <body>
-    {% block content %}
-      <div class="container mt-5">
-        <h2 class="mb-4">Python Test <p id="countdown" class="mb-4" style="display: inline;"></p> </h2>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-top: 10px; margin-bottom: 10px;">
-            
-                <ul class="navbar-nav d-flex justify-content-center text-center">
-              {% for question in questions %}
-                <li class="nav-item" style="background-color: #0d6efd; border-radius: 100px; width: 60px; margin: 10px;">
-                  <a class="nav-link" href="#" style="color: white;" onclick="showQuestion({{ question.id }})">{{ forloop.counter }}</a>
-                </li>
-              {% endfor %}
-            </ul>
-        </nav>
-        <form id="questionForm" method="post" action="{% url 'submit_all_solutions' %}">
-          {% csrf_token %}
-          <div class="question-container">
-            {% for question in questions %}
-              <div class="question" id="question{{ question.id }}"{% if forloop.first %}style="display:block;"{% else %}style="display:none;"{% endif %}>
-                <h4>Question {{ forloop.counter }}:</h4>
-                <pre style="font-family: sans-serif;">{{ question.question_text }}</pre>
-                <div class="form-group mt-2">
-                  <label for="{{ question.id }}">Your Answer:</label>
-                  <textarea class="form-control" name="{{ question.id }}" rows="10" style="white-space: pre-wrap;"></textarea>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-          <div class="mt-4">
-            <button type="button" class="btn btn-secondary" onclick="showPrevious()">Previous</button>
-            <button type="button" class="btn btn-secondary" onclick="showNext()">Next</button>
-            <input type="submit" class="btn btn-primary" value="Submit All Answers" />
-          </div>
-        </form>
+    <form id="questionForm" method="post" action="{% url 'submit_all_solutions' %}">
+      <div class="card" style="padding: 20px; margin-bottom: 20px; background-color: antiquewhite;">
+        <h2 class="mb-4">Python Test</h2>
+        {% csrf_token %}
+        <div class="question-container">
+          {% for question in questions %}
+            <h4>Question {{ forloop.counter }}:</h4>
+            <pre style="font-family: sans-serif;">{{ question.question_text }}</pre>
+            <div class="form-group mt-2">
+              <label for="{{ question.id }}">Your Answer:</label>
+              <textarea class="form-control" name="{{ question.id }}" rows="5" style="white-space: pre-wrap;"></textarea>
+            </div>
+          {% endfor %}
+        </div>
       </div>
+      <div class="d-flex justify-content-center align-items-center" style="margin-bottom: 20px;">
+        <input type="submit" class="btn btn-primary" value="Submit All Answers" />
+      </div>
+    </form>
 
-      <script>
-        function showQuestion(questionId) {
-            $('.question').hide();
-            $('#question' + questionId).show();
-        }
-
-        function showNext() {
-            var currentQuestion = $('.question:visible');
-            var nextQuestion = currentQuestion.next('.question');
-            if (nextQuestion.length > 0) {
-                currentQuestion.hide();
-                nextQuestion.show();
-            }
-        }
-
-        function showPrevious() {
-            var currentQuestion = $('.question:visible');
-            var prevQuestion = currentQuestion.prev('.question');
-            if (prevQuestion.length > 0) {
-                currentQuestion.hide();
-                prevQuestion.show();
-            }
-        }
-      var countdownMinutes = {{ time_allotted }};
-      var countdownSeconds = 0;
-    
-      function updateCountdown() {
-        var countdownDisplay = document.getElementById('countdown');
-        countdownDisplay.innerHTML = countdownMinutes + 'm ' + countdownSeconds + 's';
-    
-        if (countdownMinutes === 0 && countdownSeconds === 0) {
-          document.getElementById('questionForm').submit();
-        } else {
-          if (countdownSeconds === 0) {
-            countdownMinutes--;
-            countdownSeconds = 59;
+    <script>
+        var countdownMinutes = {{ time_allotted }};
+        var countdownSeconds = 0;
+      
+        function updateCountdown() {
+          updateCountdownInNavbar(countdownMinutes, countdownSeconds);
+      
+          if (countdownMinutes === 0 && countdownSeconds === 0) {
+            document.getElementById('questionForm').submit();
           } else {
-            countdownSeconds--;
+            if (countdownSeconds === 0) {
+              countdownMinutes--;
+              countdownSeconds = 59;
+            } else {
+              countdownSeconds--;
+            }
+            setTimeout(updateCountdown, 1000);
           }
-          setTimeout(updateCountdown, 1000);
         }
-      }
-    
-      window.onload = function () {
-        updateCountdown();
-      };
-
-  history.pushState(null, null, window.location.href);
-  window.onpopstate = function () {
-      history.go(1);
-  };
-    </script>
-    {% endblock %}
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js" integrity="sha384-XMAtWueFfO9zQF6zNlSlZvdziL4zQltTIU75MQs7rNLESD0ZwQHTENKNT8F1w9gV" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+      
+        window.onload = function () {
+          updateCountdown();
+        };
+      </script>
   </body>
-</html>
+{% endblock %}

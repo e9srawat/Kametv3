@@ -326,7 +326,7 @@ class SubmitAllSolutionsView(UserRequiredDispatchMixin,CreateView):
         
         if testuser.attempts > 0:
             testuser.attempts -= 1
-            testuser.update()
+            testuser.save()
                         
             for ques_id, sol_text in request.POST.items():
                 if ques_id != 'csrfmiddlewaretoken':
