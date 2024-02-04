@@ -1,0 +1,51 @@
+{% extends 'adminpanel.html' %}
+
+{% block content %}
+<h1>{{ user.username }}'s Solutions</h1>
+
+<form method="post" action="{% url 'update_status' user_id=user.id %}">
+    {% csrf_token %}
+
+    {% if user_solutions %}
+    <ul>
+
+        {% for paper in papers %}
+        <div class="card" style="padding: 30px; margin-bottom: 20px; background-color: antiquewhite;">
+
+        <h3>{{ paper }}</h3>
+        {% for user_solution in user_solutions %}
+        {% if user_solution.question.paper == paper %}
+            <li>
+                <pre style="font-family: sans-serif; font-size: large;">{{ user_solution.question.question_text }}</pre>
+                <h5 style="display: inline;">{{ user.username }}'s Answer: <h6 style="display: inline;">{{ user_solution.status }}</h6> </h5>
+                <pre style="background-color: gray; padding: 20px; border-radius: 10px; margin-top: 10px;">{{ user_solution.solution }}</pre>
+                <label for="status">Status</label>
+                <select id="status_{{ user_solution.id }}" class="form-select" name="status_{{ user_solution.id }}">
+                    <option value="unchecked" {% if user_solution.status == 'unchecked' %}selected{% endif %}>Unchecked</option>
+                    <option value="correct" {% if user_solution.status == 'correct' %}selected{% endif %}>Correct</option>
+                    <option value="incorrect" {% if user_solution.status == 'incorrect' %}selected{% endif %}>Incorrect</option>
+                </select>
+                <br>
+            </li>
+            {% endif %}
+        {% endfor %}
+        <br>
+    </div>
+
+        {% endfor %}
+
+    </ul>
+
+    <div class="d-flex justify-content-center align-items-center" style="margin: 20px;">
+        <button type="submit" style="width: 200px;" class="btn btn-success">Grade</button>
+    </div>
+    
+
+</form>
+{% else %}
+
+<br>
+    <p>{{ user.username }} has not given any tests yet</p>
+{% endif %}
+{% endblock %}
+

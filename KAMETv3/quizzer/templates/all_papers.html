@@ -1,0 +1,17 @@
+{% extends 'adminpanel.html' %}
+
+{% block content %}
+  <div class="card" style="padding: 20px; margin-bottom: 20px; background-color: #ededed;">
+    <h1>All Papers</h1>
+
+    <ul>
+      {% for paper in all_papers %}
+        <li style="margin-top:20px;">
+          <a href="{% url 'questions' paper_id=paper.id %}">{{ paper.subject }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="d-flex justify-content-center align-items-center">
+  </div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'adminpanel.html' %}
+{% block content %}
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
+  <br />
+  <form method="post" action="{% url 'register' %}">
+    {% csrf_token %}
+    <div class="card" style="padding: 20px; margin-bottom: 20px; background-color: #ededed;">
+      <div class="d-flex justify-content-center align-items-center">
+        <h2>Create User</h2>
+      </div>
+      <div class="row row-cols-2 g-2" style="margin-top: 10px;">
+        <div class="col">
+          <input type="text" class="form-control" name="username" placeholder="username" style="max-width: 600px;" required /><br />
+        </div>
+        <div class="col">
+          <input type="password" class="form-control" name="password" placeholder="password" style="max-width: 600px;" required /><br />
+        </div>
+      </div>
+      <div class="row row-cols-1 g-2">
+        <div class="col">
+          <input type="email" class="form-control" name="email" placeholder="Email-ID" required /><br />
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center align-items-center">
+        <h4>Settings</h4>
+      </div>
+      <div class="d-flex text-center justify-content-center align-items-center" style="margin-top: 10px;">
+        <div class="row row-cols-3 g-2">
+          <div class="col" style="width: 200px;">
+            <label for="attempts">Number of Attempts</label>
+            <input type="number" class="form-control mx-auto" style="max-width: 100px;" name="attempts" min="0" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex text-center justify-content-center align-items-center" style="margin-top: 10px;">
+      <a class="btn btn-secondary" href="{% url 'all_usernames' %}" style="width: 200px;">Cancel</a> &nbsp;&nbsp;&nbsp;
+      <button type="submit" class="btn btn-success" style="width: 200px;">Create User</button>
+    </div>
+  </form>
+{% endblock %}

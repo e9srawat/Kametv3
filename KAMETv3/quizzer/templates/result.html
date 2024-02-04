@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Your Score : {{ correct }}/{{ total }}</h1>
+<h6>Unchecked problems: {{ unchecked }}</h6>
+<div class="card" style="padding: 20px; margin-bottom: 20px; background-color: #ededed;">
+
+<br>
+<h4>Your Solutions:-</h4>
+    {% if user_solutions %}
+    <ol>
+        {% for user_solution in user_solutions %}
+            <li>
+                <h5>Question: </h5>
+                <pre style="font-family: sans-serif;">{{ user_solution.question.question_text }}</pre>
+                <h5 style="display: inline;">Your Answer: <h6 style="display: inline;">{{ user_solution.status }}</h6> </h5>
+                {% if user_solution.status == 'correct' %}
+                    <pre style="background-color: green; padding: 20px; border-radius: 15px; margin-top: 10px;">{{ user_solution.solution }}</pre>
+                {% elif user_solution.status == 'incorrect' %}
+                    <pre style="background-color: darkred; padding: 20px; border-radius: 15px; margin-top: 10px;">{{ user_solution.solution }}</pre>
+                {% else %}
+                    <pre style="background-color: gray; padding: 20px; border-radius: 15px; margin-top: 10px;">{{ user_solution.solution }}</pre>
+                {% endif %}   
+                <br>
+            </li>
+        {% endfor %}
+    </ol>
+{% else %}
+<br>
+    <p>You have not given any tests yet</p>
+{% endif %}
+</div>
+{% endblock %}
+

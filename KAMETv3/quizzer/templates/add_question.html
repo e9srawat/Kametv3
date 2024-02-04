@@ -1,0 +1,24 @@
+{% extends 'adminpanel.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Question</title>
+</head>
+<body>
+  
+
+{% block content %}
+    <h1>Add Question</h1>
+
+    <form method="post" action="{% url 'add_question' paper_id=paper.id %}">
+      {% csrf_token %}
+      <labelfor="question">Question:</label>
+      <textarea class="form-control" name="question_text" placeholder="Type your Question here" id="floatingTextarea2" style="height: 200px" required></textarea>
+      
+      <button type="submit" class="btn btn-success" style="margin: 20px; width: 100px;" >Add</button>
+    </form>
+    <br>
+    {% endblock %}
+
+  </body>
+</html>
