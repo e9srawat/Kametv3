@@ -30,7 +30,7 @@
 
 ## Go inside the project folder
 
-    cd Kamet/Entropy
+    cd Kametv3/KAMETv3
 
 ## Install the necessary modules
 
