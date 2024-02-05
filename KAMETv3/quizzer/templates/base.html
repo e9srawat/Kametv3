@@ -60,7 +60,7 @@
 
         <div class="d-flex" style="justify-content: center; margin-top: 50px;">
           <a class="btn btn-primary" href="{% url 'paper_questions' paper_id=paper.id %}">Start Test</a> &nbsp;&nbsp;&nbsp;&nbsp;
-          <a href="{% url 'result' paper_id=paper.id %}" class="btn btn-success">Results</a> 
+          <a href="{% url 'result' pk=paper.id %}" class="btn btn-success">Results</a> 
         </div>
         <div class="d-flex" style="justify-content: center; margin-top: 20px;">
         <p>Attempts left : {{ tuser.attempts }}</p>

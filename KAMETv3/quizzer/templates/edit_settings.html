@@ -11,7 +11,7 @@
       {% csrf_token %}
       <div style="flex">
         <h6>Attempts:</h6>
-        <input type="number" class="form-control" style="max-width: 100px;" name="attempts" value="{{ user.attempts }}" min="1" required />
+        <input type="number" class="form-control" style="max-width: 100px;" name="attempts" value="{{ tuser.attempts }}" min="1" required />
       </div>
       <br />
       <a class="btn btn-secondary" href="{% url 'all_usernames' %}">Cancel</a>

@@ -42,9 +42,8 @@ def login_user(request):
 
             if user is not None:
                 login(request, user)
-                return redirect('subs')  # Redirect to the subs page upon successful login
+                return redirect('subs')
             else:
-                # Handle invalid login credentials
                 form.add_error(None, 'Invalid username or password.')
 
     else:
@@ -141,13 +140,15 @@ class DeleteQuestion(AdminRequiredDispatchMixin,DeleteView):
     template_name = None
     
     def get_success_url(self):
-        question = get_object_or_404(Question, pk=self.kwargs['pk'])
-        return reverse_lazy('questions', kwargs={'paper_id': question.paper.id})
+        return reverse_lazy('questions', kwargs={'paper_id': self.object.paper.id})
     
 class AddQuestion(AdminRequiredDispatchMixin,CreateView):
     model = Question
     template_name = 'add_question.html'
     fields = ['question_text']
+    
+    def get_object(self, queryset=None):
+        return get_object_or_404(Paper, pk=self.kwargs['paper_id'])
 
     def form_valid(self, form):
         paper = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
@@ -156,12 +157,14 @@ class AddQuestion(AdminRequiredDispatchMixin,CreateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        print(self.get_object())
+        print (self.object)
         context['paper'] = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
         return context
 
     def get_success_url(self):
         return reverse_lazy('questions', kwargs={'paper_id': self.kwargs['paper_id']})
-    
+
     
 class AllUsernames(AdminRequiredDispatchMixin,ListView):
     model = TestUser
@@ -178,7 +181,7 @@ class Register(AdminRequiredDispatchMixin,View):
         username = request.POST["username"]
         password = request.POST["password"]
         email = request.POST["email"]
-        attempts = request.POST.get("attempts") or 5
+        attempts = request.POST.get("attempts") or 1
 
         subject = "Welcome to Kamet"
         message = f'''You can login and give the test AT WWW.EXAMPLE.COM \n
@@ -187,7 +190,7 @@ class Register(AdminRequiredDispatchMixin,View):
         recipient = [email]
 
         if not User.objects.filter(username=username).exists():
-            user = TestUser(username=username, password=password, email=email)
+            user = TestUser(username=username, password=password, email=email, attempts=attempts)
             user.createUser()
             #send_mail(subject, message, from_email, recipient)
             return redirect("all_usernames")
@@ -201,9 +204,9 @@ class EditSettings(AdminRequiredDispatchMixin,UpdateView):
     fields = ['attempts']
     success_url = reverse_lazy('all_usernames')
 
-    def get_object(self, queryset=None):
-        user_id = self.kwargs['user_id']
-        return TestUser.objects.get(id=user_id)
+    def get_context_data(self, **kwargs):
+        return {'tuser':self.object}
+
 
 class DeleteUser(AdminRequiredDispatchMixin,DeleteView):
     model = TestUser
@@ -214,31 +217,26 @@ class UserSolutions(AdminRequiredDispatchMixin,DetailView):
     model = TestUser
     template_name = "user_solutions_detail.html"
     context_object_name = "user"
-
+    
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user_solutions = UserSolution.objects.filter(test_user=self.object)
+        user_solutions = self.object.user_solution.all()
         paper = Paper.objects.all()
-        context["user_solutions"] = user_solutions
-        context["papers"] = paper
+        context = {"user_solutions":user_solutions, "papers":paper, "tuser":self.object}
 
         return context
 
 class UpdateStatus(AdminRequiredDispatchMixin,UpdateView):
     model = UserSolution  
-    def get_object(self, queryset=None):
-        user_id = self.kwargs['user_id']
-        tuser = get_object_or_404(TestUser, id=user_id)
-        user_solutions = UserSolution.objects.filter(test_user=tuser)
-        return user_solutions
+    success_url = reverse_lazy('all_usernames')  
+    
+    def get_object(self):
+        user = TestUser.objects.get(pk=self.kwargs['pk'])
+        return UserSolution.objects.filter(test_user=user)
 
     def post(self, request, *args, **kwargs):
         user_solutions = self.get_object()
         for user_solution in user_solutions:
-            status = request.POST.get(
-                f"status_{user_solution.id}"
-            ) 
-            user_solution.status = status
+            user_solution.status =  request.POST.get(f"status_{user_solution.id}")
             user_solution.save()
 
         return redirect("all_usernames")
@@ -252,57 +250,38 @@ class Base(UserRequiredDispatchMixin,TemplateView):
     template_name = "base.html"
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
-        testuser = TestUser.objects.get(username=user.username)
-        paper_id = self.kwargs['paper_id']
-
-        paper = Paper.objects.get(id=paper_id)
-        
-        context = {'paper':paper, 'tuser':testuser }
+        user = self.request.user   
+        context = {'paper':Paper.objects.get(id=self.kwargs['paper_id']), 'tuser':TestUser.objects.get(username=user.username) }
         return context
 
     
 class RandomQuestionsView(UserRequiredDispatchMixin,ListView):
     template_name = "question_list.html"
     
-    def get(self, request,paper_id, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         user = self.request.user
-        paper = get_object_or_404(Paper, id=paper_id)
+        paper = Paper.objects.get(id=self.kwargs['paper_id'])
         testuser = TestUser.objects.get(username=user.username)
 
         if testuser.attempts > 0:
-            if user.is_authenticated:
-                user_solved_questions = [
-                    solution.question_id
-                    for solution in UserSolution.objects.filter(test_user=testuser)
-                ]
-                available_questions = Question.objects.filter(paper=paper).exclude(id__in=user_solved_questions)
-                random_questions = random.sample(
-                    list(available_questions),
-                    min(paper.number_questions, len(available_questions))
-                )
                 context = {
-                    "questions": random_questions,
+                    "questions": paper.random_question(testuser),
                     "time_allotted": paper.time_allotted
                 }
                 return render(request, self.template_name, context)
-            else:
-                return redirect("login")
         else:
             return render(request, "exhausted.html")
         
 class ResultView(UserRequiredDispatchMixin,ListView):
-    model = UserSolution
+    model = Paper
     template_name = 'result.html'
-    context_object_name = 'user_solutions'
 
-    def get_queryset(self):
-        paper_id = self.kwargs.get('paper_id')  # Update this if your URL structure is different
-        paper = Paper.objects.get(pk=paper_id)
-        return UserSolution.objects.filter(question__paper=paper)
+    def get_object(self):
+        return Paper.objects.get(pk=self.kwargs['pk'])
     
     def get_context_data(self, **kwargs):
-        solutions = self.get_queryset()
+        paper = self.get_object()
+        solutions = UserSolution.objects.filter(question__paper=paper)
         total = solutions.count()
         correct,incorrect = 0,0
         for i in solutions:
@@ -310,11 +289,7 @@ class ResultView(UserRequiredDispatchMixin,ListView):
                 correct+=1
             elif i.status == 'incorrect':
                 incorrect+= 1
-        context = super().get_context_data(**kwargs)
-        context['paper'] = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
-        context['total'] = total
-        context['correct'] = correct
-        context['incorrect'] = incorrect
+        context = {'user_solutions':solutions,'paper':self.get_object(),'total':total,'correct':correct,'incorrect':incorrect}
         return context
     
 class SubmitAllSolutionsView(UserRequiredDispatchMixin,CreateView):

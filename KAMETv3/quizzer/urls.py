@@ -23,18 +23,16 @@ urlpatterns = [
     
     path('all_usernames/', views.AllUsernames.as_view(), name='all_usernames'),
     path("register/", views.Register.as_view(), name="register"),
-    path('edit_settings/<int:user_id>/', views.EditSettings.as_view(), name='edit_settings'),
+    path('edit_settings/<int:pk>/', views.EditSettings.as_view(), name='edit_settings'),
     path('delete_user/<int:pk>/', views.DeleteUser.as_view(), name='delete_user'),
     path('user_solutions/<int:pk>/', views.UserSolutions.as_view(), name='user_solutions_detail'),
-    path("update_status/<int:user_id>/", views.UpdateStatus.as_view(), name="update_status"),
-
-
+    path("update_status/<int:pk>/", views.UpdateStatus.as_view(), name="update_status"),
 
 
     path("subs", views.Subjects.as_view(), name="subs"),
     path("dash/<int:paper_id>/", views.Base.as_view(), name="base"),
     path('paper/<int:paper_id>/', views.RandomQuestionsView.as_view(), name='paper_questions'),
     path('submit_all_solutions/', views.SubmitAllSolutionsView.as_view(), name='submit_all_solutions'),
-    path('result/<int:paper_id>/', views.ResultView.as_view(), name='result'),
+    path('result/<int:pk>/', views.ResultView.as_view(), name='result'),
 
 ]

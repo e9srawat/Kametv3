@@ -1,9 +1,9 @@
 {% extends 'adminpanel.html' %}
 
 {% block content %}
-<h1>{{ user.username }}'s Solutions</h1>
+<h1>{{ tuser }}'s Solutions</h1>
 
-<form method="post" action="{% url 'update_status' user_id=user.id %}">
+<form method="post" action="{% url 'update_status' pk=tuser.id %}">
     {% csrf_token %}
 
     {% if user_solutions %}
@@ -17,7 +17,7 @@
         {% if user_solution.question.paper == paper %}
             <li>
                 <pre style="font-family: sans-serif; font-size: large;">{{ user_solution.question.question_text }}</pre>
-                <h5 style="display: inline;">{{ user.username }}'s Answer: <h6 style="display: inline;">{{ user_solution.status }}</h6> </h5>
+                <h5 style="display: inline;">{{ tuser }}'s Answer: <h6 style="display: inline;">{{ user_solution.status }}</h6> </h5>
                 <pre style="background-color: gray; padding: 20px; border-radius: 10px; margin-top: 10px;">{{ user_solution.solution }}</pre>
                 <label for="status">Status</label>
                 <select id="status_{{ user_solution.id }}" class="form-select" name="status_{{ user_solution.id }}">
@@ -45,7 +45,7 @@
 {% else %}
 
 <br>
-    <p>{{ user.username }} has not given any tests yet</p>
+    <p>{{ tuser }} has not given any tests yet</p>
 {% endif %}
 {% endblock %}
 

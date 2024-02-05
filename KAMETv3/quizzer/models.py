@@ -1,6 +1,7 @@
 from typing import Any
 from django.db import models
 from django.contrib.auth.models import User
+import random
 
 # Create your models here.
 class TestUser(models.Model):
@@ -28,11 +29,20 @@ class Paper(models.Model):
     time_allotted = models.IntegerField(default=60)
     number_questions = models.IntegerField(default=10)
     
+    def random_question(self, testuser):
+        user_solved_questions = [i.question.id for i in testuser.user_solution.all()]
+        available_questions = self.qpaper.exclude(id__in=user_solved_questions)
+        random_questions = random.sample(
+            list(available_questions),
+            min(self.number_questions, len(available_questions))
+        )
+        return random_questions
+        
     def __str__(self):
         return self.subject
     
 class Question(models.Model):
-    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE, related_name='qpaper')
     question_text = models.TextField()
 
     def __str__(self):
@@ -44,8 +54,8 @@ class UserSolution(models.Model):
         ("incorrect", "Incorrect"),
         ("unchecked", "Unchecked"),
     ]
-    test_user = models.ForeignKey(TestUser, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    test_user = models.ForeignKey(TestUser, on_delete=models.CASCADE, related_name='user_solution')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='uquestion')
     solution = models.TextField()
     status = models.CharField(max_length=10, choices=CHECK_CHOICES, default="unchecked")
 
