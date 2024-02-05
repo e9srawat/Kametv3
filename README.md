@@ -40,9 +40,8 @@
 
     pip install django
 
-## Make migrations
+## Perform migrations
 
-    python manage.py makemigrations
     python manage.py migrate
 
 
