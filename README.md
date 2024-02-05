@@ -1,9 +1,9 @@
 # Kametv3
 ## About the project
 
-**This is an Quiz/Test application.**
+This is an Quiz/Test application.
 
-**The Admin can add Questions, create users, change the test settings and check the answers users have submitted.**
+The Admin can add Questions, create users, change the test settings and check the answers users have submitted.
 
 **The User once created can log in read instructions and take the test**
 
