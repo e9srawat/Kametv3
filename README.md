@@ -12,7 +12,7 @@
 
 ## Clone the repository
 
-    git clone https://github.com/e9srawat/Kamet
+    git clone https://github.com/e9srawat/Kametv3
 
 ## Create a virtual environment
 
