@@ -33,6 +33,6 @@ urlpatterns = [
     path("dash/<int:paper_id>/", views.Base.as_view(), name="base"),
     path('paper/<int:paper_id>/', views.RandomQuestionsView.as_view(), name='paper_questions'),
     path('submit_all_solutions/', views.SubmitAllSolutionsView.as_view(), name='submit_all_solutions'),
-    path('result/<int:pk>/', views.ResultView.as_view(), name='result'),
+    path('result/<int:pk>/<int:paper_id>/', views.ResultView.as_view(), name='result'),
 
 ]

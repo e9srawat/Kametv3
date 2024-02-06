@@ -1,6 +1,6 @@
 import random
 from typing import Any
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from .models import *
@@ -150,15 +150,13 @@ class AddQuestion(AdminRequiredDispatchMixin,CreateView):
     def get_object(self, queryset=None):
         return get_object_or_404(Paper, pk=self.kwargs['paper_id'])
 
-    def form_valid(self, form):
-        paper = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
-        form.instance.paper = paper
-        return super().form_valid(form)
+    def post(self, request, *args, **kwargs):
+        paper = self.get_object()
+        paper.add_question(request.POST['question_text'])
+        return redirect(self.get_success_url())
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(self.get_object())
-        print (self.object)
         context['paper'] = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
         return context
 
@@ -190,8 +188,9 @@ class Register(AdminRequiredDispatchMixin,View):
         recipient = [email]
 
         if not User.objects.filter(username=username).exists():
-            user = TestUser(username=username, password=password, email=email, attempts=attempts)
-            user.createUser()
+            user = User.objects.create_user(username=username, password=password, email=email)
+            testuser = TestUser(user=user, attempts=attempts)
+            testuser.save()
             #send_mail(subject, message, from_email, recipient)
             return redirect("all_usernames")
         return render(
@@ -251,7 +250,7 @@ class Base(UserRequiredDispatchMixin,TemplateView):
 
     def get_context_data(self, **kwargs):
         user = self.request.user   
-        context = {'paper':Paper.objects.get(id=self.kwargs['paper_id']), 'tuser':TestUser.objects.get(username=user.username) }
+        context = {'paper':Paper.objects.get(id=self.kwargs['paper_id']), 'tuser':TestUser.objects.get(user=user) }
         return context
 
     
@@ -264,24 +263,26 @@ class RandomQuestionsView(UserRequiredDispatchMixin,ListView):
         testuser = TestUser.objects.get(username=user.username)
 
         if testuser.attempts > 0:
-                context = {
-                    "questions": paper.random_question(testuser),
-                    "time_allotted": paper.time_allotted
-                }
-                return render(request, self.template_name, context)
+            testuser.attempted()
+            context = {
+                "questions": paper.random_question(testuser),
+                "time_allotted": paper.time_allotted
+            }
+            return render(request, self.template_name, context)
         else:
             return render(request, "exhausted.html")
         
-class ResultView(UserRequiredDispatchMixin,ListView):
-    model = Paper
+class ResultView(UserRequiredDispatchMixin,DetailView):
+    model = TestUser
     template_name = 'result.html'
 
-    def get_object(self):
-        return Paper.objects.get(pk=self.kwargs['pk'])
+    # def get_object(self):
+    #     return TestUser.objects.get(pk=self.kwargs['pk'])
     
     def get_context_data(self, **kwargs):
-        paper = self.get_object()
-        solutions = UserSolution.objects.filter(question__paper=paper)
+        paper = Paper.objects.get(pk=self.kwargs['paper_id'])
+        user = self.object
+        solutions = user.solutions(paper)
         total = solutions.count()
         correct,incorrect = 0,0
         for i in solutions:
@@ -298,18 +299,14 @@ class SubmitAllSolutionsView(UserRequiredDispatchMixin,CreateView):
     def post(self, request, *args, **kwargs):
         user = request.user
         testuser = TestUser.objects.get(username=user.username)
-        
-        if testuser.attempts > 0:
-            testuser.attempts -= 1
-            testuser.save()
-                        
-            for ques_id, sol_text in request.POST.items():
-                if ques_id != 'csrfmiddlewaretoken':
-                    question = Question.objects.get(id=ques_id)
-                    if sol_text:
-                        UserSolution.objects.create(
-                            test_user=testuser,
-                            question=question,
-                            solution=sol_text,
-                        )
+
+        for ques_id, sol_text in request.POST.items():
+            if ques_id != 'csrfmiddlewaretoken':
+                question = Question.objects.get(id=ques_id)
+                if sol_text:
+                    UserSolution.objects.create(
+                        test_user=testuser,
+                        question=question,
+                        solution=sol_text,
+                    )
         return redirect("subs")

@@ -5,23 +5,23 @@
     <h1>All Users</h1>
 
     <ul>
-      {% for user in all_users %}
+      {% for testuser in all_users %}
         <li style="margin-top:20px;">
-          {{ user.username }}
-          <a href="{% url 'user_solutions_detail' pk=user.id %}">Submissions</a>
+          {{ testuser.user }}
+          <a href="{% url 'user_solutions_detail' pk=testuser.id %}">Submissions</a>
           <div style="margin-top: 10px;">
-            <a class="btn btn-primary" href="{% url 'edit_settings' pk=user.id %}">Settings</a>
-            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal{{ user.id }}">Delete</button>
-            <form method="post" action="{% url 'delete_user' pk=user.id %}">
+            <a class="btn btn-primary" href="{% url 'edit_settings' pk=testuser.id %}">Settings</a>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal{{ testuser.id }}">Delete</button>
+            <form method="post" action="{% url 'delete_user' pk=testuser.id %}">
               {% csrf_token %}
-              <div class="modal fade" id="exampleModal{{ user.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal fade" id="exampleModal{{ testuser.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h1 class="modal-title fs-5" id="exampleModalLabel">Warning</h1>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">Are you sure you want to delete the user "{{ user.username }}"?</div>
+                    <div class="modal-body">Are you sure you want to delete the user "{{ testuser.user }}"?</div>
                     <div class="modal-footer">
                       <button type="button" style="width: 48%;" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                       <button type="submit" class="btn btn-danger" style="width: 48%;">Delete</button>
