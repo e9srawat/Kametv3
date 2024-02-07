@@ -1,19 +1,18 @@
 {% extends 'adminpanel.html' %}
 
 {% block content %}
-<h1>{{ tuser }}'s Solutions</h1>
+<h1>{{ testuser }}'s Solutions</h1>
 
-<form method="post" action="{% url 'update_status' pk=tuser.id %}">
+<form method="post" action="{% url 'update_status' pk=testuser.id %}">
     {% csrf_token %}
-
-    {% if user_solutions %}
+    {% if testuser.user_solution.all %}
     <ul>
 
         {% for paper in papers %}
         <div class="card" style="padding: 30px; margin-bottom: 20px; background-color: antiquewhite;">
 
         <h3>{{ paper }}</h3>
-        {% for user_solution in user_solutions %}
+        {% for user_solution in testuser.user_solution.all %}
         {% if user_solution.question.paper == paper %}
             <li>
                 <pre style="font-family: sans-serif; font-size: large;">{{ user_solution.question.question_text }}</pre>

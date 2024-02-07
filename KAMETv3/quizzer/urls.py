@@ -9,19 +9,17 @@ urlpatterns = [
     
     path('all_papers/', views.AllPapers.as_view(), name='all_papers'),
     path('add_paper/', views.AddPaper.as_view(), name='add_paper'),
-    path('edit_paper/<int:paper_id>', views.EditPaper.as_view(), name='edit_paper'),
+    path('edit_paper/<int:pk>', views.EditPaper.as_view(), name='edit_paper'),
     path('delete_paper/<int:pk>/', views.DeletePaper.as_view(), name='delete_paper'),
 
 
-    path('questions/<int:paper_id>', views.PaperQuestions.as_view(), name='questions'),    
-    path('edit_question/<int:question_id>/', views.EditQuestion.as_view(), name='edit_question'),
+    path('questions/<int:pk>', views.PaperQuestions.as_view(), name='questions'),    
+    path('edit_question/<int:pk>/', views.EditQuestion.as_view(), name='edit_question'),
     path('delete_question/<int:pk>/', views.DeleteQuestion.as_view(), name='delete_question'),
+    path('add_question/<int:pk>', views.AddQuestion.as_view(), name='add_question'),
 
     
-    path('add_question/<int:paper_id>', views.AddQuestion.as_view(), name='add_question'),
-
-    
-    path('all_usernames/', views.AllUsernames.as_view(), name='all_usernames'),
+    path('all_usernames/', views.AllUsers.as_view(), name='all_usernames'),
     path("register/", views.Register.as_view(), name="register"),
     path('edit_settings/<int:pk>/', views.EditSettings.as_view(), name='edit_settings'),
     path('delete_user/<int:pk>/', views.DeleteUser.as_view(), name='delete_user'),
@@ -31,8 +29,8 @@ urlpatterns = [
 
     path("subs", views.Subjects.as_view(), name="subs"),
     path("dash/<int:paper_id>/", views.Base.as_view(), name="base"),
-    path('paper/<int:paper_id>/', views.RandomQuestionsView.as_view(), name='paper_questions'),
-    path('submit_all_solutions/', views.SubmitAllSolutionsView.as_view(), name='submit_all_solutions'),
+    path('paper/<int:pk>/', views.TakeTest.as_view(), name='paper_questions'),
+    path('submit_all_solutions/', views.TakeTest.as_view(), name='submit_all_solutions'),
     path('result/<int:pk>/<int:paper_id>/', views.ResultView.as_view(), name='result'),
 
 ]

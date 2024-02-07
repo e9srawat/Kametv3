@@ -4,39 +4,39 @@
     <div class="card" style="padding: 20px; margin-bottom: 20px; background-color: antiquewhite;">
     <h1>All Questions</h1>
       <ul>
-        {% for question in questions %}
-          <li>{{ question.question_text }}
-            <div style="margin-top: 10px;">
-              <a href="{% url 'edit_question' question_id=question.id %}" class="btn btn-primary">Edit</a>
-              <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal{{ question.id }}">Delete</button>
-            <form method="post" action="{% url 'delete_question' pk=question.id %}">
-              {% csrf_token %}
-              <div class="modal fade" id="exampleModal{{ question.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="exampleModalLabel">Warning</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      Are you sure you want to delete the following question?<pre style="font-family: sans-serif;">{{ question.question_text }}</pre>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="width: 48%;">Close</button>
-                      <button type="submit" class="btn btn-danger" style="width: 48%;">Delete</button>
+        {% for question in paper.qpaper.all %}
+            <li>{{ question.question_text }}
+              <div style="margin-top: 10px;">
+                <a href="{% url 'edit_question' pk=question.id %}" class="btn btn-primary">Edit</a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal{{ question.id }}">Delete</button>
+              <form method="post" action="{% url 'delete_question' pk=question.id %}">
+                {% csrf_token %}
+                <div class="modal fade" id="exampleModal{{ question.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Warning</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        Are you sure you want to delete the following question?<pre style="font-family: sans-serif;">{{ question.question_text }}</pre>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="width: 48%;">Close</button>
+                        <button type="submit" class="btn btn-danger" style="width: 48%;">Delete</button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </form>
-          </div>
+              </form>
+            </div>
 
-          </li>
-          
+            </li>
+                    
         {% endfor %}
       </ul>
 </div>
 <div class="d-flex" style="justify-content: center; margin: 20px;">
-    <a href="{% url "add_question" paper_id=paper.id %}" class="btn btn-success" style="width: 300px;" >Add Question</a>
+    <a href="{% url "add_question" pk=paper.id %}" class="btn btn-success" style="width: 300px;" >Add Question</a>
 </div>
     {% endblock %}

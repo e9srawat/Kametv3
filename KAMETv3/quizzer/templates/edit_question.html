@@ -6,9 +6,9 @@
   <form method="post">
     {% csrf_token %}
     <h5>Question:</h5>
-    <textarea name="question_text" class="form-control" rows="10" cols="50" required>{{ question.question_text }}</textarea>
+    <textarea name="question_text" class="form-control" rows="10" cols="50" required>{{ question }}</textarea>
     <br />
     <button type="button submit" class="btn btn-success">Update</button>
-    <a class="btn btn-primary" href="{% url 'questions' paper_id=paper_id %}">Back to All Questions</a>
+    <a class="btn btn-primary" href="{% url 'questions' pk=question.paper.id %}">Back to All Questions</a>
   </form>
 {% endblock %}

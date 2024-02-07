@@ -1,312 +1,338 @@
-import random
-from typing import Any
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
+"""views"""
+
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from .models import *
-from django.views.generic import *
+from django.views.generic import (
+    ListView,
+    DetailView,
+    UpdateView,
+    DeleteView,
+    CreateView,
+    TemplateView,
+    View,
+)
 from django.contrib.auth import authenticate, login, logout
-from .forms import loginForm
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import loginForm
+from .models import TestUser, Paper, Question, UserSolution
 
 
 class AdminRequiredDispatchMixin(LoginRequiredMixin):
+    """only admin can access"""
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             if request.user.is_superuser:
                 return super().dispatch(request, *args, **kwargs)
-            return redirect('subs')
-        return redirect('login')
-    
+            return redirect("subs")
+        return redirect("login")
+
+
 class UserRequiredDispatchMixin(LoginRequiredMixin):
+    """only non-admin can access"""
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             if not request.user.is_superuser:
                 return super().dispatch(request, *args, **kwargs)
-            return redirect('control')
-        return redirect('login')   
+            return redirect("control")
+        return redirect("login")
 
 
 # Create your views here.
 
 
 def login_user(request):
- 
+    """login view"""
     if request.method == "POST":
         form = loginForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            
+            username = form.cleaned_data["username"]
+            password = form.cleaned_data["password"]
             user = authenticate(request, username=username, password=password)
-
             if user is not None:
                 login(request, user)
-                return redirect('subs')
-            else:
-                form.add_error(None, 'Invalid username or password.')
-
+                return redirect("subs")
+            form.add_error(None, "Invalid username or password.")
     else:
         form = loginForm()
+    return render(request, "login.html", {"form": form})
 
-    return render(request, 'login.html', {'form': form})
 
 class LogoutUser(View):
+    """logout view"""
+
     def get(self, request, *args, **kwargs):
+        """GET method"""
         logout(request)
         return redirect("login")
 
+
 class AdminPanel(AdminRequiredDispatchMixin, TemplateView):
-    template_name = 'adminpanel.html'
-    
-class AllPapers(AdminRequiredDispatchMixin,ListView):
+    """admin dashboard view"""
+
+    template_name = "adminpanel.html"
+
+
+class AllPapers(AdminRequiredDispatchMixin, ListView):
+    """Show all available papers view"""
+
     model = Paper
-    template_name = 'all_papers.html'
-    context_object_name = 'all_papers'
-    
-class AddPaper(AdminRequiredDispatchMixin,CreateView):
+    template_name = "all_papers.html"
+    context_object_name = "all_papers"
+
+
+class AddPaper(AdminRequiredDispatchMixin, CreateView):
+    """Add a new paper view"""
+
     model = Paper
-    template_name = 'add_paper.html'
-    fields = ['subject', 'time_allotted', 'number_questions']
-    success_url = reverse_lazy('all_papers')  
+    template_name = "add_paper.html"
+    fields = ["subject", "time_allotted", "number_questions"]
+    success_url = reverse_lazy("all_papers")
 
-    def post(self, request, *args, **kwargs):
-        subject = request.POST.get('Subject')
-        time_allotted = request.POST.get('time_allotted')
-        number_questions = request.POST.get('number_questions')
-        Paper.objects.create(subject=subject, time_allotted=time_allotted, number_questions=number_questions)
 
-        return HttpResponseRedirect(self.success_url)
+class EditPaper(AdminRequiredDispatchMixin, UpdateView):
+    """edit a paper view"""
 
-class EditPaper(AdminRequiredDispatchMixin,UpdateView):
     model = Paper
-    template_name = 'edit_paper.html'
-    fields = ['subject', 'time_allotted', 'number_questions']
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        paper = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
-        context['paper'] = paper
-        
-        return context
+    template_name = "edit_paper.html"
+    fields = ["subject", "time_allotted", "number_questions"]
+    context_object_name = "paper"
+    success_url = reverse_lazy("all_papers")
 
-    def get_object(self, queryset=None):
-        return get_object_or_404(Paper, pk=self.kwargs['paper_id'])
 
-    def get_success_url(self):
-        return reverse_lazy('all_papers')
-    
-class DeletePaper(AdminRequiredDispatchMixin,DeleteView):
+class DeletePaper(AdminRequiredDispatchMixin, DeleteView):
+    """delete a paper view"""
+
     model = Paper
     template_name = None
-    
-    def get_success_url(self):
-        return reverse_lazy('all_papers')
-    
+    success_url = reverse_lazy("all_papers")
+
+
 class PaperQuestions(AdminRequiredDispatchMixin, ListView):
+    """Shows all questions in the selected paper view"""
+
     model = Question
-    template_name = 'paper_questions.html'
-    context_object_name = 'questions'
-    
-    def get_queryset(self):
-        self.paper = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
-        return Question.objects.filter(paper=self.paper)
+    template_name = "paper_questions.html"
 
     def get_context_data(self, **kwargs):
+        """returns context"""
         context = super().get_context_data(**kwargs)
-        context['paper'] = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
-        return context
-    
-class EditQuestion(AdminRequiredDispatchMixin,UpdateView):
-    model = Question
-    template_name = 'edit_question.html'
-    fields = ['question_text']
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        question = get_object_or_404(Question, pk=self.kwargs['question_id'])
-        context['paper_id'] = question.paper.id
+        context["paper"] = Paper.objects.get(pk=self.kwargs["pk"])
         return context
 
-    def get_object(self, queryset=None):
-        return get_object_or_404(Question, pk=self.kwargs['question_id'])
+
+class EditQuestion(AdminRequiredDispatchMixin, UpdateView):
+    """Docstring"""
+
+    model = Question
+    template_name = "edit_question.html"
+    fields = ["question_text"]
 
     def get_success_url(self):
-        question = get_object_or_404(Question, pk=self.kwargs['question_id'])
-        return reverse_lazy('questions', kwargs={'paper_id': question.paper.id})
-    
-class DeleteQuestion(AdminRequiredDispatchMixin,DeleteView):
+        """returns success_url"""
+        question = self.object
+        return reverse_lazy("questions", kwargs={"pk": question.paper.id})
+
+
+class DeleteQuestion(AdminRequiredDispatchMixin, DeleteView):
+    """Docstring"""
+
     model = Question
     template_name = None
-    
+
     def get_success_url(self):
-        return reverse_lazy('questions', kwargs={'paper_id': self.object.paper.id})
-    
-class AddQuestion(AdminRequiredDispatchMixin,CreateView):
-    model = Question
-    template_name = 'add_question.html'
-    fields = ['question_text']
-    
-    def get_object(self, queryset=None):
-        return get_object_or_404(Paper, pk=self.kwargs['paper_id'])
+        """returns success_url"""
+
+        return reverse_lazy("questions", kwargs={"pk": self.object.paper.id})
+
+
+class AddQuestion(AdminRequiredDispatchMixin, CreateView):
+    """Docstring"""
+
+    model = Paper
+    template_name = "add_question.html"
+    fields = []
 
     def post(self, request, *args, **kwargs):
+        """POST method"""
         paper = self.get_object()
-        paper.add_question(request.POST['question_text'])
+        paper.qpaper.create(question_text=request.POST["question_text"])
         return redirect(self.get_success_url())
-    
+
     def get_context_data(self, **kwargs):
+        """returns context"""
+
         context = super().get_context_data(**kwargs)
-        context['paper'] = get_object_or_404(Paper, pk=self.kwargs['paper_id'])
+        context["paper"] = self.get_object()
         return context
 
     def get_success_url(self):
-        return reverse_lazy('questions', kwargs={'paper_id': self.kwargs['paper_id']})
+        """returns success_url"""
+        return reverse_lazy("questions", kwargs={"pk": self.kwargs["pk"]})
 
-    
-class AllUsernames(AdminRequiredDispatchMixin,ListView):
+
+class AllUsers(AdminRequiredDispatchMixin, ListView):
+    """Docstring"""
+
     model = TestUser
-    template_name = 'all_usernames.html'
-    context_object_name = 'all_users'
+    template_name = "all_usernames.html"
+    context_object_name = "all_users"
 
-class Register(AdminRequiredDispatchMixin,View):
-    template_name = 'register.html'
-    
+
+class Register(AdminRequiredDispatchMixin, View):
+    """Docstring"""
+
+    template_name = "register.html"
+
     def get(self, request):
+        """GET method"""
         return render(request, self.template_name)
-    
+
     def post(self, request, *args, **kwargs):
+        """POST method"""
+        buser = get_user_model()
         username = request.POST["username"]
         password = request.POST["password"]
         email = request.POST["email"]
-        attempts = request.POST.get("attempts") or 1
+        attempts = request.POST["attempts"] or 1
 
-        subject = "Welcome to Kamet"
-        message = f'''You can login and give the test AT WWW.EXAMPLE.COM \n
-        your username is "{username}" and your password is "{password}"'''
-        from_email = "shivansh.rawat@enine.school"
-        recipient = [email]
-
-        if not User.objects.filter(username=username).exists():
-            user = User.objects.create_user(username=username, password=password, email=email)
-            testuser = TestUser(user=user, attempts=attempts)
-            testuser.save()
-            #send_mail(subject, message, from_email, recipient)
+        if not buser.objects.filter(username=username).exists():
+            tuser = buser.objects.create_user(
+                username=username, password=password, email=email
+            )
+            testuser = TestUser.objects.create(user=tuser, attempts=attempts)
+            # testuser.send_email(password)
             return redirect("all_usernames")
-        return render(
-            request, self.template_name, {"error": "Username already exists"}
-        )
-    
-class EditSettings(AdminRequiredDispatchMixin,UpdateView):
+        return render(request, self.template_name, {"error": "Username already exists"})
+
+
+class EditSettings(AdminRequiredDispatchMixin, UpdateView):
+    """Docstring"""
+
     model = TestUser
-    template_name = 'edit_settings.html'
-    fields = ['attempts']
-    success_url = reverse_lazy('all_usernames')
-
-    def get_context_data(self, **kwargs):
-        return {'tuser':self.object}
+    template_name = "edit_settings.html"
+    fields = ["attempts"]
+    success_url = reverse_lazy("all_usernames")
+    context_object_name = "tuser"
 
 
-class DeleteUser(AdminRequiredDispatchMixin,DeleteView):
+class DeleteUser(AdminRequiredDispatchMixin, DeleteView):
+    """Docstring"""
+
     model = TestUser
     template_name = None
-    success_url = reverse_lazy('all_usernames')
-    
-class UserSolutions(AdminRequiredDispatchMixin,DetailView):
+    success_url = reverse_lazy("all_usernames")
+
+
+class UserSolutions(AdminRequiredDispatchMixin, DetailView):
+    """Docstring"""
+
     model = TestUser
     template_name = "user_solutions_detail.html"
-    context_object_name = "user"
-    
-    def get_context_data(self, **kwargs):
-        user_solutions = self.object.user_solution.all()
-        paper = Paper.objects.all()
-        context = {"user_solutions":user_solutions, "papers":paper, "tuser":self.object}
 
+    def get_context_data(self, **kwargs):
+        """returns context"""
+        context = super().get_context_data(**kwargs)
+        paper = Paper.objects.all()
+        context["papers"] = paper
         return context
 
-class UpdateStatus(AdminRequiredDispatchMixin,UpdateView):
-    model = UserSolution  
-    success_url = reverse_lazy('all_usernames')  
-    
-    def get_object(self):
-        user = TestUser.objects.get(pk=self.kwargs['pk'])
+
+class UpdateStatus(AdminRequiredDispatchMixin, UpdateView):
+    """Docstring"""
+
+    model = UserSolution
+    success_url = reverse_lazy("all_usernames")
+
+    def get_object(self, queryset=None):
+        """Returns object"""
+        user = TestUser.objects.get(pk=self.kwargs["pk"])
         return UserSolution.objects.filter(test_user=user)
 
     def post(self, request, *args, **kwargs):
+        """POST method"""
         user_solutions = self.get_object()
         for user_solution in user_solutions:
-            user_solution.status =  request.POST.get(f"status_{user_solution.id}")
+            user_solution.status = request.POST[f"status_{user_solution.id}"]
             user_solution.save()
-
         return redirect("all_usernames")
 
-class Subjects(UserRequiredDispatchMixin,ListView):
+
+class Subjects(UserRequiredDispatchMixin, ListView):
+    """Docstring"""
+
     model = Paper
     template_name = "subjects.html"
-    context_object_name = 'subjects'
-    
-class Base(UserRequiredDispatchMixin,TemplateView):
+    context_object_name = "subjects"
+
+
+class Base(UserRequiredDispatchMixin, TemplateView):
+    """Docstring"""
+
     template_name = "base.html"
 
     def get_context_data(self, **kwargs):
-        user = self.request.user   
-        context = {'paper':Paper.objects.get(id=self.kwargs['paper_id']), 'tuser':TestUser.objects.get(user=user) }
+        """returns context"""
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["paper"] = Paper.objects.get(id=self.kwargs["paper_id"])
+        context["tuser"] = TestUser.objects.get(user=user)
         return context
 
-    
-class RandomQuestionsView(UserRequiredDispatchMixin,ListView):
+
+class TakeTest(UserRequiredDispatchMixin, View):
+    """Docstring"""
+
     template_name = "question_list.html"
-    
+
     def get(self, request, *args, **kwargs):
+        """GET method"""
         user = self.request.user
-        paper = Paper.objects.get(id=self.kwargs['paper_id'])
-        testuser = TestUser.objects.get(username=user.username)
+        paper = Paper.objects.get(id=self.kwargs["pk"])
+        testuser = TestUser.objects.get(user=user)
 
         if testuser.attempts > 0:
             testuser.attempted()
             context = {
                 "questions": paper.random_question(testuser),
-                "time_allotted": paper.time_allotted
+                "time_allotted": paper.time_allotted,
             }
             return render(request, self.template_name, context)
-        else:
-            return render(request, "exhausted.html")
-        
-class ResultView(UserRequiredDispatchMixin,DetailView):
-    model = TestUser
-    template_name = 'result.html'
+        return render(request, "exhausted.html")
 
-    # def get_object(self):
-    #     return TestUser.objects.get(pk=self.kwargs['pk'])
-    
-    def get_context_data(self, **kwargs):
-        paper = Paper.objects.get(pk=self.kwargs['paper_id'])
-        user = self.object
-        solutions = user.solutions(paper)
-        total = solutions.count()
-        correct,incorrect = 0,0
-        for i in solutions:
-            if i.status == 'correct':
-                correct+=1
-            elif i.status == 'incorrect':
-                incorrect+= 1
-        context = {'user_solutions':solutions,'paper':self.get_object(),'total':total,'correct':correct,'incorrect':incorrect}
-        return context
-    
-class SubmitAllSolutionsView(UserRequiredDispatchMixin,CreateView):
-    model = UserSolution
-         
     def post(self, request, *args, **kwargs):
-        user = request.user
-        testuser = TestUser.objects.get(username=user.username)
-
+        """POST method"""
+        testuser = TestUser.objects.get(user=request.user)
         for ques_id, sol_text in request.POST.items():
-            if ques_id != 'csrfmiddlewaretoken':
+            if ques_id != "csrfmiddlewaretoken":
                 question = Question.objects.get(id=ques_id)
                 if sol_text:
-                    UserSolution.objects.create(
-                        test_user=testuser,
-                        question=question,
-                        solution=sol_text,
+                    UserSolution(
+                        test_user=testuser, question=question, solution=sol_text
                     )
         return redirect("subs")
+
+
+class ResultView(UserRequiredDispatchMixin, DetailView):
+    """Docstring"""
+
+    model = TestUser
+    template_name = "result.html"
+    context_object_name = "tuser"
+
+    def get_context_data(self, **kwargs):
+        """returns context"""
+        context = super().get_context_data(**kwargs)
+        user = self.object
+        paper = Paper.objects.get(pk=self.kwargs["paper_id"])
+        solutions = user.user_solution.filter(question__paper=paper)
+        total = len(solutions)
+        correct = len([i for i in solutions if i.status == "correct"])
+        unchecked = len([i for i in solutions if i.status == "unchecked"])
+        context["user_solutions"] = solutions
+        context["total"] = total
+        context["unchecked"] = unchecked
+        context["correct"] = correct
+        return context

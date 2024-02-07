@@ -7,9 +7,9 @@
     <ul>
       {% for paper in all_papers %}
         <li style="margin-top:20px;">
-          <a href="{% url 'questions' paper_id=paper.id %}">{{ paper.subject }}</a>
+          <a href="{% url 'questions' pk=paper.id %}">{{ paper.subject }}</a>
           <div style="margin-top: 10px;">
-            <a class="btn btn-primary" href="{% url 'edit_paper' paper_id=paper.id %}">Settings</a>
+            <a class="btn btn-primary" href="{% url 'edit_paper' pk=paper.id %}">Settings</a>
             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal{{ paper.id }}">Delete</button>
             <form method="post" action="{% url 'delete_paper' pk=paper.id %}">
               {% csrf_token %}

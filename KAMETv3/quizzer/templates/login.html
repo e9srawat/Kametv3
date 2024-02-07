@@ -56,6 +56,12 @@
     <div class="container">
       <div class="login-form">
         <h2 style="display: flex; justify-content: center; ">LOGIN</h2>
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger" style="max-width: 350px; ">
+          {{ form.non_field_errors.as_text }}
+        </div>
+        {% endif %}
+
         <div class="text-center" style="display: flex; justify-content: center; align-items: center;">
           <form method="post" style="margin-top: 10px;">
             {% csrf_token %}
